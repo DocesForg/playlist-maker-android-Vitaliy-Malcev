@@ -205,14 +205,3 @@ fun CreatePlaylistScreen(
         }
     }
 }
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 800)
-@Composable
-fun CreatePlaylistScreenPreview() {
-    ProjectTheme {
-        CreatePlaylistScreen(
-            onBackClick = {},
-            onSaveClick = { _, _ -> }
-        )
-    }
-}

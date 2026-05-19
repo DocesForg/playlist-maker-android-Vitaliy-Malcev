@@ -1,6 +1,5 @@
 package com.example.project.ui.view_model
 
-import com.example.project.creator.Storage
 import com.example.project.data.network.RetrofitNetworkClient
 import com.example.project.data.network.TracksRepositoryImpl
 import com.example.project.domain.Track
@@ -13,8 +12,3 @@ sealed class SearchState {
     data class Fail(val error: String) : SearchState()
 }
 
-object Creator {
-    fun getTracksRepository(): TracksRepository {
-        return TracksRepositoryImpl(RetrofitNetworkClient(Storage()))
-    }
-}
