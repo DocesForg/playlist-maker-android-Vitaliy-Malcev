@@ -1,6 +1,7 @@
 package com.example.project.ui.activity
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,8 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.project.R
+import com.example.project.domain.Playlist
 import com.example.project.domain.Track
+import com.example.project.ui.theme.ErrorRed
+import com.example.project.ui.theme.PrimaryBlue
 import com.example.project.ui.theme.SurfaceWhite
+import com.example.project.ui.theme.TextPrimary
 import com.example.project.ui.view_model.TrackDetailsViewModel
 import kotlinx.coroutines.launch
 
@@ -54,18 +61,39 @@ fun TrackDetailsScreen(
     val state by viewModel.state.collectAsState()
 
     when (state) {
+        TrackDetailsViewModel.State.Loading -> {
+            TrackDetailsScreenLoading()
+        }
+
         is TrackDetailsViewModel.State.Content -> {
-            val track = (state as TrackDetailsViewModel.State.Content).track
-            TrackDetailsScreenContent(track, onBackClick)
+            val content = state as TrackDetailsViewModel.State.Content
+            TrackDetailsScreenContent(
+                track = content.track,
+                playlists = content.playlists,
+                onAddToPlaylist = { playlistId ->
+                    viewModel.addTrackToPlaylist(playlistId)
+                },
+                onBackClick = onBackClick,
+                viewModel = viewModel
+            )
+        }
+
+        is TrackDetailsViewModel.State.Error -> {
+            TrackDetailsScreenError(
+                onBackClick = onBackClick
+            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TrackDetailsScreenContent(
+fun TrackDetailsScreenContent(
     track: Track,
-    onBackClick: () -> Unit
+    playlists: List<Playlist>,
+    onAddToPlaylist: (Long) -> Unit,
+    onBackClick: () -> Unit,
+    viewModel: TrackDetailsViewModel
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -82,13 +110,38 @@ private fun TrackDetailsScreenContent(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
+
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = "Нет плейлистов",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(vertical = 12.dp)
-                )
+                if (playlists.isEmpty()) {
+                    Text(stringResource(R.string.playlists_not_found), fontSize = 18.sp)
+                } else {
+                    playlists.forEach { playlist ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onAddToPlaylist(playlist.id)
+                                    isSheetOpen = false
+                                    scope.launch { sheetState.hide() }
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_music),
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                playlist.name,
+                                fontSize = 18.sp,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
             }
@@ -100,125 +153,152 @@ private fun TrackDetailsScreenContent(
             .fillMaxSize()
             .background(SurfaceWhite)
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.48f)
+                .height(70.dp)
+                .background(SurfaceWhite),
+            contentAlignment = Alignment.CenterStart
         ) {
-            AsyncImage(
-                model = track.image,
-                placeholder = painterResource(id = R.drawable.ic_music),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-
-            IconButton(
-                onClick = onBackClick,
+            Row(
                 modifier = Modifier
-                    .padding(16.dp)
-                    .size(27.dp)
-                    .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_back),
-                    contentDescription = stringResource(R.string.back),
-                    tint = Color.Black
-                )
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.cd_back),
+                        tint = TextPrimary
+                    )
+                }
             }
         }
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
+                .fillMaxSize()
         ) {
-            Text(
-                text = track.trackName,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = track.artistName,
-                fontSize = 16.sp,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(50.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.48f)
             ) {
-
-                IconButton(
-                    onClick = {
-                        isSheetOpen = true
-                        scope.launch { sheetState.show() }
-                    },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color.Gray),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_add_playlist),
-                            contentDescription = stringResource(R.string.add_to_playlist),
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-
-                IconButton(
-                    onClick = {},
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(Color.Gray),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_favorite_outline),
-                            contentDescription = stringResource(R.string.add_to_favorites),
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
+                AsyncImage(
+                    model = track.image,
+                    placeholder = painterResource(id = R.drawable.ic_music),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
             }
 
-            Spacer(modifier = Modifier.height(35.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.duration),
-                    fontSize = 16.sp,
-                    color = Color.DarkGray
+                    text = track.trackName,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    text = track.trackTime,
+                    text = track.artistName,
                     fontSize = 16.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Medium
+                    color = Color.Black
                 )
+
+                Spacer(modifier = Modifier.height(50.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(
+                        onClick = {
+                            isSheetOpen = true
+                            scope.launch { sheetState.show() }
+                        },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (track.playlistId != 0L)
+                                        PrimaryBlue
+                                    else Color.Gray
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_add_playlist),
+                                contentDescription = stringResource(R.string.add_to_playlist),
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
+
+                    IconButton(
+                        onClick = { viewModel.toggleFavorite() },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        val icon = if (track.favorite)
+                            R.drawable.ic_favorite_filled
+                        else
+                            R.drawable.ic_favorite_outline
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (track.favorite)
+                                        ErrorRed
+                                    else Color.Gray
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = icon),
+                                contentDescription = stringResource(R.string.add_to_favorites),
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(35.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.duration),
+                        fontSize = 16.sp,
+                        color = Color.DarkGray
+                    )
+
+                    Text(
+                        text = track.trackTime,
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }
@@ -237,7 +317,19 @@ fun TrackDetailsScreenError(onBackClick: () -> Unit) {
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "Ошибка: трек не найден")
+            Text(text = stringResource(R.string.track_not_found))
         }
+    }
+}
+
+@Composable
+fun TrackDetailsScreenLoading() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(SurfaceWhite),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
     }
 }
