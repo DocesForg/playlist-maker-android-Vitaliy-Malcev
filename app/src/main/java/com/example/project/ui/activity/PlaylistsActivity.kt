@@ -26,12 +26,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import coil.compose.AsyncImage
 import com.example.project.R
 import com.example.project.domain.Playlist
 import com.example.project.ui.theme.DarkGrey
@@ -138,23 +140,36 @@ fun PlaylistListItem(playlist: Playlist, onClick: () -> Unit) {
             .padding(start = 20.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_add_photo),
-            contentDescription = playlist.name,
-            tint = Color.Gray,
+        Box(
             modifier = Modifier.size(48.dp)
-        )
+        ) {
+            if (playlist.coverImageUri != null) {
+                AsyncImage(
+                    model = playlist.coverImageUri.toUri(),
+                    contentDescription = playlist.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_add_photo),
+                    contentDescription = playlist.name,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.width(12.dp))
 
         Column {
-            Text(playlist.name, fontSize = 17.sp)
+            Text(playlist.name, fontSize = 17.sp, color = TextPrimary)
 
             val count = playlist.tracks.size
             Text(
                 "$count ${trackWordForm(count)}",
                 fontSize = 13.sp,
-                color = Color.Gray
+                color = TextSecondary
             )
         }
     }

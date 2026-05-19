@@ -24,6 +24,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.project.R
+import com.example.project.data.preferences.ThemePreferences
 import com.example.project.ui.navigation.PlaylistHost
 import com.example.project.ui.theme.PrimaryBlue
 import com.example.project.ui.theme.ProjectTheme
@@ -44,15 +48,27 @@ import com.example.project.ui.theme.TextSecondary
 import com.example.project.ui.theme.White
 
 class MainActivity : ComponentActivity() {
+    private lateinit var themePreferences: ThemePreferences
+    private var darkThemeEnabled by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        themePreferences = ThemePreferences(this)
+        darkThemeEnabled = themePreferences.isDarkThemeEnabled()
+
         setContent {
-            ProjectTheme {
+            ProjectTheme(darkTheme = darkThemeEnabled) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = PrimaryBlue
                 ) {
-                    PlaylistHost()
+                    PlaylistHost(
+                        darkThemeEnabled = darkThemeEnabled,
+                        onDarkThemeChange = { isEnabled ->
+                            darkThemeEnabled = isEnabled
+                            themePreferences.setDarkThemeEnabled(isEnabled)
+                        }
+                    )
                 }
             }
         }

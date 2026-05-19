@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,7 +48,10 @@ import com.example.project.domain.Track
 import com.example.project.ui.theme.ErrorRed
 import com.example.project.ui.theme.PrimaryBlue
 import com.example.project.ui.theme.SurfaceWhite
+import com.example.project.ui.theme.BackgroundGray
 import com.example.project.ui.theme.TextPrimary
+import com.example.project.ui.theme.TextSecondary
+import com.example.project.ui.theme.White
 import com.example.project.ui.view_model.TrackDetailsViewModel
 import kotlinx.coroutines.launch
 
@@ -137,7 +140,7 @@ fun TrackDetailsScreenContent(
                             Text(
                                 playlist.name,
                                 fontSize = 18.sp,
-                                color = Color.Black
+                                color = TextPrimary
                             )
                         }
                     }
@@ -186,7 +189,9 @@ fun TrackDetailsScreenContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 25.dp)
                     .fillMaxHeight(0.48f)
+                    .clip(RoundedCornerShape(16.dp))
             ) {
                 AsyncImage(
                     model = track.image,
@@ -206,7 +211,7 @@ fun TrackDetailsScreenContent(
                     text = track.trackName,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = TextPrimary
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -214,7 +219,7 @@ fun TrackDetailsScreenContent(
                 Text(
                     text = track.artistName,
                     fontSize = 16.sp,
-                    color = Color.Black
+                    color = TextPrimary
                 )
 
                 Spacer(modifier = Modifier.height(50.dp))
@@ -237,14 +242,14 @@ fun TrackDetailsScreenContent(
                                 .background(
                                     if (track.playlistId != 0L)
                                         PrimaryBlue
-                                    else Color.Gray
+                                    else BackgroundGray
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_add_playlist),
                                 contentDescription = stringResource(R.string.add_to_playlist),
-                                tint = Color.White,
+                                tint = White,
                                 modifier = Modifier.size(28.dp)
                             )
                         }
@@ -265,14 +270,14 @@ fun TrackDetailsScreenContent(
                                 .background(
                                     if (track.favorite)
                                         ErrorRed
-                                    else Color.Gray
+                                    else BackgroundGray
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 painter = painterResource(id = icon),
                                 contentDescription = stringResource(R.string.add_to_favorites),
-                                tint = Color.White,
+                                tint = White,
                                 modifier = Modifier.size(32.dp)
                             )
                         }
@@ -289,13 +294,13 @@ fun TrackDetailsScreenContent(
                     Text(
                         text = stringResource(R.string.duration),
                         fontSize = 16.sp,
-                        color = Color.DarkGray
+                        color = TextSecondary
                     )
 
                     Text(
                         text = track.trackTime,
                         fontSize = 16.sp,
-                        color = Color.Black,
+                        color = TextPrimary,
                         fontWeight = FontWeight.Medium
                     )
                 }

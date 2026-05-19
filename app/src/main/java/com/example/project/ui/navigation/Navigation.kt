@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.project.domain.Track
-import com.example.project.ui.activity.CreatePlaylistScreen
+import com.example.project.ui.activity.NewPlaylistScreen
 import com.example.project.ui.activity.FavoritesScreen
 import com.example.project.ui.activity.PlaylistDetailsScreen
 import com.example.project.ui.activity.PlaylistMakerScreen
@@ -15,6 +15,8 @@ import com.example.project.ui.activity.PlaylistsScreen
 import com.example.project.ui.activity.SearchScreen
 import com.example.project.ui.activity.SettingsScreen
 import com.example.project.ui.activity.TrackDetailsScreen
+import com.example.project.ui.view_model.FavoritesViewModel
+import com.example.project.ui.view_model.NewPlaylistViewModel
 import com.example.project.ui.view_model.PlaylistDetailsViewModel
 import com.example.project.ui.view_model.PlaylistsViewModel
 import com.example.project.ui.view_model.SearchViewModel
@@ -35,7 +37,10 @@ sealed class Screen(val route: String) {
 
 
 @Composable
-fun PlaylistHost() {
+fun PlaylistHost(
+    darkThemeEnabled: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit
+) {
     val navController = rememberNavController()
 
     NavHost(
@@ -69,6 +74,8 @@ fun PlaylistHost() {
 
         composable(Screen.Settings.route) {
             SettingsScreen(
+                darkThemeEnabled = darkThemeEnabled,
+                onDarkThemeChange = onDarkThemeChange,
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -107,18 +114,28 @@ fun PlaylistHost() {
         }
 
         composable(Screen.Favorites.route) {
+            val viewModel: FavoritesViewModel = koinViewModel()
+
             FavoritesScreen(
-                onBackClick = { navController.popBackStack() }
+                viewModel = viewModel,
+                onBackClick = { navController.popBackStack() },
+                onTrackClick = { track ->
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("track", track)
+                    navController.navigate(Screen.TrackDetails.route)
+                }
             )
         }
 
         composable(Screen.CreatePlaylist.route) { backStackEntry ->
-            val playlistsViewModel: PlaylistsViewModel = koinViewModel()
+            val newPlaylistViewModel: NewPlaylistViewModel = koinViewModel()
 
-            CreatePlaylistScreen(
+            NewPlaylistScreen(
+                viewModel = newPlaylistViewModel,
                 onBackClick = { navController.popBackStack() },
-                onSaveClick = { name, desc ->
-                    playlistsViewModel.createNewPlaylist(name, desc)
+                onSaveClick = { name, desc, coverUri ->
+                    newPlaylistViewModel.createNewPlaylist(name, desc, coverUri)
                     navController.popBackStack()
                 }
             )

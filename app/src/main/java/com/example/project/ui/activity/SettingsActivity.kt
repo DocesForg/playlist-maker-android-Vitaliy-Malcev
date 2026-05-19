@@ -27,8 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -52,10 +50,11 @@ import com.example.project.ui.theme.TextSecondary
 
 @Composable
 fun SettingsScreen(
+    darkThemeEnabled: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val darkThemeEnabled = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -107,8 +106,8 @@ fun SettingsScreen(
             SettingsItem(
                 text = stringResource(R.string.dark_theme),
                 showCustomSwitch = true,
-                switchState = darkThemeEnabled.value,
-                onSwitchChange = { }
+                switchState = darkThemeEnabled,
+                onSwitchChange = onDarkThemeChange
             )
 
             SettingsItem(
@@ -294,6 +293,8 @@ fun CustomThumbSwitch(
 fun SettingsScreenPreview() {
     ProjectTheme {
         SettingsScreen(
+            darkThemeEnabled = false,
+            onDarkThemeChange = {},
             onBackClick = {}
         )
     }
