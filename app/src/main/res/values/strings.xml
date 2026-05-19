@@ -1,3 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Project</string>
+
+    <string name="share_app">Поделиться приложением</string>
+    <string name="write_to_developers">Написать разработчикам</string>
+    <string name="user_agreement">Пользовательское соглашение</string>
+
+    <string name="share_app_text">Я нашел приложение Playlist Maker!</string>
+
+    <string name="developer_email">d0ces@yandex.ru</string>
+    <string name="email_subject">Отправьте сообщение разработчикам приложения</string>
+    <string name="email_body">Спасибо разработчикам</string>
+
+    <string name="offer_link">https://yandex.ru/legal/practicum_offer/</string>
 </resources>
