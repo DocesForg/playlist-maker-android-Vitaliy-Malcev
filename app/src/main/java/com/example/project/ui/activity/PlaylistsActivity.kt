@@ -1,6 +1,7 @@
 package com.example.project.ui.activity
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,49 +12,56 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.project.R
+import com.example.project.domain.Playlist
 import com.example.project.ui.theme.DarkGrey
-import com.example.project.ui.theme.ProjectTheme
 import com.example.project.ui.theme.SurfaceWhite
 import com.example.project.ui.theme.TextPrimary
+import com.example.project.ui.theme.TextSecondary
+import com.example.project.ui.view_model.PlaylistsViewModel
 
 @Composable
 fun PlaylistsScreen(
     onBackClick: () -> Unit,
-    onCreatePlaylistClick: () -> Unit
+    onCreatePlaylistClick: () -> Unit,
+    navigateToPlaylist: (Int) -> Unit,
+    playlistsViewModel: PlaylistsViewModel
 ) {
+    val playlists by playlistsViewModel.playlists.collectAsState(initial = emptyList())
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(SurfaceWhite)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(SurfaceWhite)
+            modifier = Modifier.fillMaxSize()
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .background(SurfaceWhite),
+                    .height(56.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(
@@ -67,7 +75,7 @@ fun PlaylistsScreen(
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_back),
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.cd_back),
                             tint = TextPrimary
                         )
@@ -84,46 +92,82 @@ fun PlaylistsScreen(
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.playlists_empty),
-                    color = TextPrimary,
-                    fontSize = 16.sp
-                )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (playlists.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = stringResource(R.string.playlists_empty), color = TextSecondary)
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    items(playlists) { playlist ->
+                        PlaylistListItem(playlist) {
+                            navigateToPlaylist(playlist.id.toInt())
+                        }
+                    }
+                }
             }
         }
 
         FloatingActionButton(
             onClick = onCreatePlaylistClick,
             modifier = Modifier
-                .padding(bottom = 32.dp, end = 16.dp)
                 .align(Alignment.BottomEnd)
-                .size(56.dp)
-                .clip(CircleShape),
+                .padding(20.dp),
             containerColor = DarkGrey,
-            contentColor = SurfaceWhite
+            contentColor = SurfaceWhite,
+            shape = CircleShape
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = stringResource(R.string.cd_create_playlist),
-                modifier = Modifier.size(42.dp)
+                contentDescription = null,
+                modifier = Modifier.size(36.dp)
             )
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
-fun PlaylistsScreenPreview() {
-    ProjectTheme {
-        PlaylistsScreen(
-            onBackClick = {},
-            onCreatePlaylistClick = {}
+fun PlaylistListItem(playlist: Playlist, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(start = 20.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_music),
+            contentDescription = playlist.name,
+            tint = Color.Gray,
+            modifier = Modifier.size(48.dp)
         )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column {
+            Text(playlist.name, fontSize = 17.sp)
+
+            val count = playlist.tracks.size
+            Text(
+                "$count ${trackWordForm(count)}",
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
+        }
+    }
+}
+
+fun trackWordForm(count: Int): String {
+    val mod10 = count % 10
+    val mod100 = count % 100
+
+    return when {
+        mod100 in 11..14 -> "треков"
+        mod10 == 1 -> "трек"
+        mod10 in 2..4 -> "трека"
+        else -> "треков"
     }
 }
