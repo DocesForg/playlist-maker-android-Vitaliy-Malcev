@@ -1,8 +1,6 @@
 package com.example.project.ui.activity
 
-import android.R.drawable.ic_menu_search
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -26,33 +24,51 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.project.ui.navigation.Screen
+import com.example.project.R
+import com.example.project.data.preferences.ThemePreferences
+import com.example.project.ui.navigation.PlaylistHost
+import com.example.project.ui.theme.PrimaryBlue
 import com.example.project.ui.theme.ProjectTheme
+import com.example.project.ui.theme.TextPrimary
+import com.example.project.ui.theme.TextSecondary
+import com.example.project.ui.theme.White
 
 class MainActivity : ComponentActivity() {
+    private lateinit var themePreferences: ThemePreferences
+    private var darkThemeEnabled by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        themePreferences = ThemePreferences(this)
+        darkThemeEnabled = themePreferences.isDarkThemeEnabled()
+
         setContent {
-            ProjectTheme {
+            ProjectTheme(darkTheme = darkThemeEnabled) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF3772E7)
+                    color = PrimaryBlue
                 ) {
-                    PlaylistHost()
+                    PlaylistHost(
+                        darkThemeEnabled = darkThemeEnabled,
+                        onDarkThemeChange = { isEnabled ->
+                            darkThemeEnabled = isEnabled
+                            themePreferences.setDarkThemeEnabled(isEnabled)
+                        }
+                    )
                 }
             }
         }
@@ -62,9 +78,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PlaylistMakerScreen(
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onPlaylistsClick: () -> Unit,
+    onFavoritesClick: () -> Unit
 ) {
-    val context = LocalContext.current
+    LocalContext.current
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -73,12 +91,12 @@ fun PlaylistMakerScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .background(Color(0xFF3772E7)),
+                .background(PrimaryBlue),
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = "Playlist maker",
-                color = Color.White,
+                text = stringResource(R.string.app_name),
+                color = White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 16.dp)
@@ -90,7 +108,7 @@ fun PlaylistMakerScreen(
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .background(Color.White)
+                .background(White)
         ) {
             Column(
                 modifier = Modifier
@@ -99,30 +117,26 @@ fun PlaylistMakerScreen(
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 MenuButton(
-                    text = "Поиск",
-                    iconResId = ic_menu_search,
+                    text = stringResource(R.string.search),
+                    iconResId = android.R.drawable.ic_menu_search,
                     onClick = onSearchClick
                 )
 
                 MenuButton(
-                    text = "Плейлисты",
-                    iconResId = com.example.project.R.drawable.ic_playlists,
-                    onClick = {
-                        Toast.makeText(context, "Нажата кнопка \"Плейлисты\"", Toast.LENGTH_SHORT).show()
-                    }
+                    text = stringResource(R.string.playlists),
+                    iconResId = R.drawable.ic_playlists,
+                    onClick = onPlaylistsClick
                 )
 
                 MenuButton(
-                    text = "Избранное",
-                    iconResId = com.example.project.R.drawable.ic_favorite_outline,
-                    onClick = {
-                        Toast.makeText(context, "Нажата кнопка \"Избранное\"", Toast.LENGTH_SHORT).show()
-                    }
+                    text = stringResource(R.string.favorites),
+                    iconResId = R.drawable.ic_favorite_outline,
+                    onClick = onFavoritesClick
                 )
 
                 MenuButton(
-                    text = "Настройки",
-                    iconResId = com.example.project.R.drawable.ic_settings_gear,
+                    text = stringResource(R.string.settings),
+                    iconResId = R.drawable.ic_settings_gear,
                     onClick = onSettingsClick
                 )
             }
@@ -143,13 +157,8 @@ fun MenuButton(
             .fillMaxWidth()
             .height(66.dp),
         shape = RoundedCornerShape(0.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
-        ),
-        border = null
+        colors = CardDefaults.cardColors(containerColor = White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -158,21 +167,19 @@ fun MenuButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = iconResId),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = Color(0xFF1A1B22)
+                    tint = TextPrimary
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Text(
                     text = text,
-                    color = Color(0xFF1A1B22),
+                    color = TextPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Start
@@ -180,40 +187,10 @@ fun MenuButton(
             }
 
             Icon(
-                painter = painterResource(id = com.example.project.R.drawable.ic_arrow_right),
-                contentDescription = "Стрелка",
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = Color(0xFFAEAFB4)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun PlaylistHost() {
-    val navController = rememberNavController()
-
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Main.route
-    ) {
-        composable(Screen.Main.route) {
-            PlaylistMakerScreen(
-                onSearchClick = { navController.navigate(Screen.Search.route) },
-                onSettingsClick = { navController.navigate(Screen.Settings.route) }
-            )
-        }
-
-        composable(Screen.Search.route) {
-            SearchScreen(
-                onBackClick = { navController.popBackStack() }
-            )
-        }
-
-        composable(Screen.Settings.route) {
-            SettingsScreen(
-                onBackClick = { navController.popBackStack() }
+                tint = TextSecondary
             )
         }
     }
@@ -225,7 +202,9 @@ fun PlaylistMakerScreenPreview() {
     ProjectTheme {
         PlaylistMakerScreen(
             onSearchClick = {},
-            onSettingsClick = {}
+            onSettingsClick = {},
+            onPlaylistsClick = {},
+            onFavoritesClick = {}
         )
     }
 }

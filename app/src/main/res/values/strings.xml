@@ -1,16 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Project</string>
+    <string name="app_name">PlaylistMaker</string>
+    <string name="search">Поиск</string>
+    <string name="playlists">Плейлисты</string>
+    <string name="favorites">Избранное</string>
+    <string name="settings">Настройки</string>
 
+    <string name="search_title">Поиск</string>
+    <string name="search_hint">Поиск</string>
+    <string name="back">Назад</string>
+    <string name="enter_search_query">Введите строку для поиска</string>
+    <string name="nothing_found">Ничего не нашлось</string>
+    <string name="search_error">Ошибка: %s</string>
+    <string name="placeholder_error">Проблемы со связью</string>
+    <string name="check_the_connection">Загрузка не удалась. Проверьте подключение к интернету</string>
+    <string name="retry">Обновить</string>
+    <string name="clear">Очистить</string>
+    <string name="search_songs_placeholder">Поиск</string>
+    <string name="press_search_button">Нажмите кнопку поиска</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="dark_theme">Тёмная тема</string>
     <string name="share_app">Поделиться приложением</string>
     <string name="write_to_developers">Написать разработчикам</string>
     <string name="user_agreement">Пользовательское соглашение</string>
 
-    <string name="share_app_text">Я нашел приложение Playlist Maker!</string>
+    <string name="playlists_content">Здесь будут ваши плейлисты</string>
+    <string name="no_email_app">Почтовое приложение не найдено</string>
+    <string name="no_browser_app">Браузер не найден</string>
 
+    <string name="playlists_title">Плейлисты</string>
+    <string name="playlists_empty">Плейлисты отсутствуют</string>
+    <string name="create_playlist_title">Новый плейлист</string>
+    <string name="playlist_name_required">Название*</string>
+    <string name="playlist_description_hint">Описание</string>
+    <string name="create">Создать</string>
+    <string name="cd_create_playlist">Создать новый плейлист</string>
+    <string name="cd_add_photo">Добавить фото плейлиста</string>
+
+    <string name="favorites_title">Избранное</string>
+    <string name="favorites_empty">Здесь будут ваши избранные треки</string>
+
+    <string name="playlist_details_title">Плейлист</string>
+    <string name="playlist_cover">Обложка плейлиста</string>
+    <string name="no_tracks">Треков нет</string>
+    <string name="loading">Загрузка…</string>
+
+    <string name="cd_back">Назад</string>
+    <string name="cd_search">Поиск</string>
+    <string name="cd_clear">Очистить</string>
+    <string name="cd_arrow">Стрелка</string>
+    <string name="cd_music">Трек %s</string>
+    <string name="cd_navigate">Перейти</string>
+    <string name="cd_share">Поделиться</string>
+    <string name="cd_support">Поддержка</string>
+
+    <string name="track_not_found">Ошибка: Трек не найден</string>
+    <string name="add_to_playlist">Добавить в плейлист</string>
+    <string name="add_to_favorites">Добавить в избранное</string>
+    <string name="playlist_title">Добавить в плейлист</string>
+    <string name="duration">Длительность</string>
+    <string name="playlists_not_found">Нет плейлистов</string>
+
+    <string name="share_app_text">Я нашел приложение Playlist Maker!</string>
     <string name="developer_email">d0ces@yandex.ru</string>
     <string name="email_subject">Отправьте сообщение разработчикам приложения</string>
     <string name="email_body">Спасибо разработчикам</string>
-
     <string name="offer_link">https://yandex.ru/legal/practicum_offer/</string>
 </resources>
